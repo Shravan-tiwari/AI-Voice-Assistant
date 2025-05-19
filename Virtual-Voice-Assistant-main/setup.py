@@ -3,7 +3,7 @@ import wikipedia
 import pyjokes
 import datetime
 import speedtest
-from youtube_search_python import VideosSearch
+from youtubesearchpython import VideosSearch
 import requests
 
 st.set_page_config(page_title="AI Voice Assistant", layout="centered")
