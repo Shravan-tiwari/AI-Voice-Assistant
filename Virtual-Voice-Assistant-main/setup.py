@@ -1,69 +1,48 @@
-import subprocess
+import streamlit as st
+import wikipedia
+import pyjokes
+import datetime
+import speedtest
+from youtube_search_python import VideosSearch
+import requests
 
-print("THIS MAY TAKE A WHILE DEPENDING ON YOUR SYSTEM AND INTERNET SPEED\n\nPLEASE WAIT..\n\n")
+st.set_page_config(page_title="AI Voice Assistant", layout="centered")
 
-try:
-    subprocess.run(["pip", "install", "-r", "requirements.txt"])
-except KeyboardInterrupt:
-    print("DOWNLOAD STOPPED")
-    exit(0)
+st.title("🤖 AI Voice Assistant (Text-Based Demo)")
+st.write("Type a command below:")
 
-import os
-import logging
-logging.disable(logging.WARNING)
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' # disabling warnings for gpu requirements
+command = st.text_input("Your Command:")
 
-import sqlite3
-conn = sqlite3.connect('Data/chats.db')
-cursor = conn.cursor()
-table = '''CREATE TABLE IF NOT EXISTS ASSISTANT (SERIAL_NO INTEGER PRIMARY KEY,
-            QUERY VARCHAR(255) NOT NULL ,
-            DATE_TIME VARCHAR(50) NOT NULL );'''
-cursor.execute(table)
-conn.commit()
+if command:
+    command = command.lower()
 
-try:
-    # importing prebuilt modules
-    import pyttsx3
-    from keras_preprocessing.sequence import pad_sequences
-    import numpy as np
-    from keras.models import load_model
-    from pickle import load
-    import speech_recognition as sr
-    import sys
-    from keras.preprocessing.text import Tokenizer
-    from keras_preprocessing.sequence import pad_sequences
-    from sklearn.preprocessing import LabelEncoder
-    from tensorflow.python.keras.models import Sequential
-    from tensorflow.python.keras.layers import Dense, Embedding, GlobalAveragePooling1D
-    import datetime
-    from dotenv import load_dotenv
-    from newsapi import NewsApiClient
-    import re
-    import requests
-    from wolframalpha import Client
-    import webbrowser
-    import wikipedia
-    import speedtest
-    from youtubesearchpython import VideosSearch
-    import smtplib
-    import io
-    import warnings
-    from PIL import Image
-    from stability_sdk import client
-    import stability_sdk.interfaces.gooseai.generation.generation_pb2 as generation
-    import math
-    import psutil
-    import time
-    from random import randint
-    import AppOpener
-    from pynput.keyboard import Key, Controller
-    from PIL import ImageGrab
-    import wmi
-except ImportError:
-    print("MODULES NOT INSTALLED!")
-    exit(0)
-except KeyboardInterrupt:
-    print("INTERRUPTED WHILE IMPORTING MODULES")
+    if 'wikipedia' in command:
+        topic = command.replace('wikipedia', '').strip()
+        result = wikipedia.summary(topic, sentences=2)
+        st.success(f"Wikipedia says:\n{result}")
 
-print("\n\nSETUP SUCCESSFUL")
+    elif 'joke' in command:
+        joke = pyjokes.get_joke()
+        st.success(f"Here's a joke:\n{joke}")
+
+    elif 'time' in command:
+        now = datetime.datetime.now().strftime("%H:%M:%S")
+        st.success(f"Current time is {now}")
+
+    elif 'youtube' in command:
+        query = command.replace('youtube', '').strip()
+        results = VideosSearch(query, limit=1).result()
+        link = results['result'][0]['link']
+        st.markdown(f"[🎬 Watch on YouTube]({link})")
+
+    elif 'internet speed' in command:
+        st.info("Testing internet speed...")
+        st_spinner = st.spinner("Running speed test...")
+        with st_spinner:
+            s = speedtest.Speedtest()
+            download = round(s.download() / (10**6), 2)
+            upload = round(s.upload() / (10**6), 2)
+        st.success(f"Download: {download} Mbps | Upload: {upload} Mbps")
+
+    else:
+        st.warning("Sorry, I didn’t understand that command.")
